@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#000000" />
+<title>JARVIS</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="bootScreen">
+  <div class="boot-line">Initializing core...</div>
+  <div class="boot-line">Loading neural interface...</div>
+  <div class="boot-line">Calibrating audio sensors...</div>
+  <div class="boot-line">Establishing memory banks...</div>
+  <div class="boot-line glow">JARVIS ONLINE</div>
+</div>
+
+<div id="app" class="hidden">
+  <header class="header">
+    <div class="title">&#9679; J A R V I S</div>
+    <div class="status-row">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">INITIALIZING</span>
+    </div>
+  </header>
+
+  <div id="infoPanel" class="info-panel hidden">
+    <img id="infoImage" class="info-image" alt="" />
+    <div id="infoTitle" class="info-title"></div>
+    <div id="infoText" class="info-text"></div>
+  </div>
+
+  <div id="chatArea" class="chat-area"></div>
+
+  <div class="waveform" id="waveform">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+
+  <button id="settingsBtn" class="gear">&#9881;</button>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>SETUP</h2>
+      <label>Groq API Key</label>
+      <input id="apiKeyInput" type="password" placeholder="gsk_..." />
+      <label>Your Name</label>
+      <input id="nameInput" type="text" value="Pratham" />
+      <div class="modal-actions">
+        <button id="saveSettings">SAVE</button>
+        <button id="closeSettings">CLOSE</button>
+      </div>
+      <button id="clearMemory" class="danger">CLEAR MEMORY</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+  </html>
