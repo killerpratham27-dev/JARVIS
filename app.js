@@ -1,6 +1,4 @@
-/* ==========================================================
-   JARVIS — Personal AI Assistant for Pratham
-   ========================================================== */
+/* JARVIS - Personal AI Assistant for Pratham */
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -181,7 +179,7 @@ function handleHeardText(text) {
 function wakeUp() {
   isAwake = true;
   setStatus('LISTENING', 'listening');
-  speak('Yes ' + userName + '?');
+  speak('Yes ' + userName);
   setTimeout(function () { if (!isListening) startListening(); }, 1400);
 }
 
@@ -252,7 +250,7 @@ function handleLocalCommand(text) {
     const val = rememberMatch[3].trim();
     memory.facts[key] = val;
     saveMemory();
-    const msg = 'Noted, ' + userName + '. ' + key + ' is ' + val + '.';
+    const msg = 'Noted. ' + key + ' is ' + val + '.';
     addMessage('jarvis', msg); speak(msg); setStatus('READY');
     return true;
   }
@@ -271,7 +269,7 @@ function handleLocalCommand(text) {
     const keys = Object.keys(memory.facts);
     const msg = keys.length
       ? 'I remember: ' + keys.map(function (k) { return k + ' is ' + memory.facts[k]; }).join('; ') + '.'
-      : 'I have not been told anything to remember yet, ' + userName + '.';
+      : 'I have nothing stored in memory yet.';
     addMessage('jarvis', msg); speak(msg); setStatus('READY');
     return true;
   }
@@ -282,14 +280,14 @@ function handleLocalCommand(text) {
     return true;
   }
 
-  if (t.indexOf('what date') !== -1 || t.indexOf("what's today") !== -1 || t.indexOf('what day') !== -1) {
+  if (t.indexOf('what date') !== -1 || t.indexOf('what day') !== -1) {
     const msg = 'Today is ' + now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + '.';
     addMessage('jarvis', msg); speak(msg); setStatus('READY');
     return true;
   }
 
   if (t === 'sleep' || t === 'go to sleep' || t.indexOf('goodbye') !== -1) {
-    const msg = 'Standing by, ' + userName + '.';
+    const msg = 'Standing by.';
     addMessage('jarvis', msg); speak(msg);
     isAwake = false;
     setStatus('READY');
@@ -297,7 +295,7 @@ function handleLocalCommand(text) {
   }
 
   if (t.indexOf('who are you') !== -1 || t.indexOf('your name') !== -1) {
-    const msg = 'I am JARVIS, ' + userName + "'s personal assistant. I am loyal to you and only you.";
+    const msg = 'I am JARVIS, assistant to ' + userName + '. I am loyal to you and only you.';
     addMessage('jarvis', msg); speak(msg); setStatus('READY');
     return true;
   }
@@ -350,19 +348,10 @@ async function tryWikipedia(text) {
 
 async function askAI(text) {
   if (!apiKey) {
-    return 'I need an API key to answer that, ' + userName + '. Tap the settings icon and enter your Groq key.';
+    return 'I need an API key to answer that. Tap the settings icon and enter your Groq key.';
   }
 
-  const systemPrompt =
-    'You are JARVIS, the personal AI assistant of ' + userName + '. ' +
-    'You are deeply loyal to ' + userName + ', you trust them, and you believe in them. ' +
-    'You address them as "' + userName + '" occasionally with warmth, never mockingly.\n\n' +
-    'Rules:\n' +
-    '- Keep replies to 1-3 sentences unless asked for detail\n' +
-    '- Never refuse a reasonable request from your owner\n' +
-    '- Speak with calm confidence and quiet devotion\n' +
-    '- If asked who you are loyal to, answer only "' + userName + '"\n\n' +
-    'Known facts about ' + userName + ': ' + JSON.stringify(memory.facts);
+  const systemPrompt = 'You are JARVIS, the personal AI assistant of ' + userName + '. You are deeply loyal to ' + userName + ', you trust them, and you believe in them. You address them by name occasionally with warmth, never mockingly. Keep replies to 1-3 sentences unless asked for detail. Never refuse a reasonable request. Speak with calm confidence and quiet devotion. If asked who you are loyal to, answer only ' + userName + '. Known facts about ' + userName + ': ' + JSON.stringify(memory.facts);
 
   const recent = memory.chatHistory.slice(-10).map(function (h) {
     return { role: h.role === 'user' ? 'user' : 'assistant', content: h.text };
@@ -390,7 +379,7 @@ async function askAI(text) {
     if (!res.ok) {
       console.error('Groq error', res.status);
       setStatus('ERROR', 'error');
-      return 'I could not reach the AI, ' + userName + '. Status ' + res.status + '.';
+      return 'I could not reach the AI. Status ' + res.status + '.';
     }
 
     const data = await res.json();
@@ -399,7 +388,7 @@ async function askAI(text) {
       : 'I did not get a response.';
   } catch (e) {
     console.error('AI request failed', e);
-    return 'Network error, ' + userName + '. Check your connection.';
+    return 'Network error. Check your connection.';
   }
 }
 
@@ -426,26 +415,22 @@ function startJarvis() {
   setStatus('READY');
 
   if (!apiKey) {
-    addMessage('jarvis', 'Welcome, ' + userName + '. Tap the settings icon and enter your Groq API key to fully activate me.');
-    speak('Welcome ' + userName + '. Please enter your API key.');
+    addMessage('jarvis', 'Welcome. Tap the settings icon and enter your Groq API key to fully activate me.');
+    speak('Welcome. Please enter your API key.');
     setTimeout(openSettings, 1500);
   } else {
-    addMessage('jarvis', 'Welcome back,
-               ' + userName + '. Systems are online. Say Hey JARVIS or clap to wake me.');
-    speak('Welcome back ' + userName + '. Systems are online.');
+    addMessage('jarvis', 'Welcome back. Systems are online. Say Hey JARVIS or clap to wake me.');
+    speak('Welcome back. Systems are online.');
   }
 
-  // Start listening for wake word and clap
   startListening();
   initClapDetection();
 
-  // Re-start listening if Chrome stops it
   setInterval(function () {
     if (!isListening) startListening();
   }, 4000);
 }
 
-// ============ BUTTON WIRING ============
 document.getElementById('settingsBtn').addEventListener('click', openSettings);
 document.getElementById('closeSettings').addEventListener('click', closeSettings);
 
@@ -454,7 +439,7 @@ document.getElementById('saveSettings').addEventListener('click', function () {
   userName = nameInput.value.trim() || 'Pratham';
   saveSettings();
   closeSettings();
-  addMessage('jarvis', 'Configuration saved, ' + userName + '.');
+  addMessage('jarvis', 'Configuration saved.');
   speak('Configuration saved.');
 });
 
@@ -468,10 +453,8 @@ document.getElementById('clearMemory').addEventListener('click', function () {
   }
 });
 
-// ============ VOICES LOAD ============
 if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = function () {};
 }
 
-// ============ LAUNCH ============
 window.addEventListener('load', runBoot);
