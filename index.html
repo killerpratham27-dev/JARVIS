@@ -9,6 +9,8 @@
 </head>
 <body>
 
+<div id="debug" style="position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font-family:monospace;font-size:10px;padding:6px;z-index:99999;max-height:120px;overflow-y:auto;border-bottom:1px solid #0f0;"></div>
+
 <div id="bootScreen">
   <div class="boot-line">Initializing core...</div>
   <div class="boot-line">Loading neural interface...</div>
@@ -18,7 +20,7 @@
 </div>
 
 <div id="app" class="hidden">
-  <header class="header">
+  <header class="header" style="margin-top:130px;">
     <div class="title">&#9679; J A R V I S</div>
     <div class="status-row">
       <span id="statusDot" class="dot"></span>
@@ -33,6 +35,11 @@
   </div>
 
   <div id="chatArea" class="chat-area"></div>
+
+  <div style="display:flex;gap:6px;padding:8px 0;">
+    <input id="textInput" type="text" placeholder="Type here..." style="flex:1;padding:10px;background:#000810;color:#fff;border:1px solid #00e5ff;border-radius:8px;font-size:14px;" />
+    <button id="sendBtn" style="padding:10px 16px;background:#00e5ff;color:#000;border:none;border-radius:8px;font-weight:700;">SEND</button>
+  </div>
 
   <div class="waveform" id="waveform">
     <span></span><span></span><span></span><span></span>
@@ -57,24 +64,7 @@
     </div>
   </div>
 </div>
-  <script>
-window.addEventListener('error', function(e){
-  var d = document.createElement('div');
-  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#500;color:#fff;font-size:11px;padding:8px;z-index:99999;word-break:break-all;';
-  d.textContent = 'ERR: ' + e.message + ' @ ' + (e.filename||'').split('/').pop() + ':' + e.lineno;
-  document.body.appendChild(d);
-});
-</script>
+
 <script src="app.js"></script>
 </body>
 </html>
-<script>
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(function(s){ console.log('MIC OK'); })
-      .catch(function(e){ console.log('MIC ERR', e); });
-  }
-  </script>
-<script src="app.js"></script>
-</body>
-  </html>
