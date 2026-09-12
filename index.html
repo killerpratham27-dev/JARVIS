@@ -68,7 +68,13 @@ window.addEventListener('error', function(e){
 <script src="app.js"></script>
 </body>
 </html>
-
+<script>
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function(s){ console.log('MIC OK'); })
+      .catch(function(e){ console.log('MIC ERR', e); });
+  }
+  </script>
 <script src="app.js"></script>
 </body>
   </html>
