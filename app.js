@@ -431,7 +431,7 @@ function startJarvis() {
     setTimeout(openSettings, 1500);
   } else {
     addMessage('jarvis', 'Welcome back,
-               ' + userName + '. Systems are online. Say "Hey JARVIS" or clap to wake me.');
+               ' + userName + '. Systems are online. Say Hey JARVIS or clap to wake me.');
     speak('Welcome back ' + userName + '. Systems are online.');
   }
 
