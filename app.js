@@ -1,5 +1,14 @@
 /* JARVIS - Personal AI Assistant for Pratham */
-
+function log(msg) {
+  console.log(msg);
+  var d = document.getElementById('debug');
+  if (d) {
+    var line = document.createElement('div');
+    line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+    d.appendChild(line);
+    d.scrollTop = d.scrollHeight;
+  }
+}
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const WIKI_SEARCH_URL = 'https://en.wikipedia.org/w/api.php';
@@ -130,10 +139,12 @@ function initSpeechRecognition() {
 
   r.onstart = function () {
     isListening = true;
+    log('MIC START');
     setStatus('LISTENING', 'listening');
     showWaveform(true);
   };
-  r.onerror = function (e) {
+    r.onerror = function (e) {
+    log('MIC ERROR: ' + e.error);
     isListening = false;
     showWaveform(false);
     setStatus('READY');
@@ -144,8 +155,9 @@ function initSpeechRecognition() {
     showWaveform(false);
     if (!isAwake) setStatus('READY');
   };
-  r.onresult = function (e) {
+    r.onresult = function (e) {
     const text = e.results[0][0].transcript.trim();
+    log('HEARD: ' + text);
     if (!text) return;
     handleHeardText(text);
   };
@@ -161,6 +173,7 @@ function startListening() {
 
 function handleHeardText(text) {
   const lower = text.toLowerCase();
+  log('CHECKING WAKE in: ' + lower);
   if (!isAwake) {
     if (lower.indexOf(WAKE_WORD_PRIMARY) !== -1 || lower.indexOf(WAKE_WORD_SHORT) !== -1) {
       wakeUp();
@@ -361,6 +374,7 @@ async function askAI(text) {
     .concat(recent)
     .concat([{ role: 'user', content: text }]);
 
+    log('CALLING AI...');
   try {
     const res = await fetch(GROQ_URL, {
       method: 'POST',
@@ -382,7 +396,8 @@ async function askAI(text) {
       return 'I could not reach the AI. Status ' + res.status + '.';
     }
 
-    const data = await res.json();
+        const data = await res.json();
+    log('AI REPLIED OK');
     return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
       ? data.choices[0].message.content.trim()
       : 'I did not get a response.';
