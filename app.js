@@ -1,14 +1,5 @@
 /* JARVIS - Personal AI Assistant for Pratham */
-function log(msg) {
-  console.log(msg);
-  var d = document.getElementById('debug');
-  if (d) {
-    var line = document.createElement('div');
-    line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-    d.appendChild(line);
-    d.scrollTop = d.scrollHeight;
-  }
-}
+
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const WIKI_SEARCH_URL = 'https://en.wikipedia.org/w/api.php';
@@ -42,6 +33,17 @@ const infoText = $('infoText');
 const settingsModal = $('settingsModal');
 const apiKeyInput = $('apiKeyInput');
 const nameInput = $('nameInput');
+
+function log(msg) {
+  console.log(msg);
+  const d = document.getElementById('debug');
+  if (!d) return;
+  const line = document.createElement('div');
+  const t = new Date().toLocaleTimeString();
+  line.textContent = t + ' ' + msg;
+  d.appendChild(line);
+  d.scrollTop = d.scrollHeight;
+}
 
 function loadMemory() {
   try {
@@ -128,7 +130,7 @@ function initSpeechRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     setStatus('NO VOICE SUPPORT', 'error');
-    addMessage('jarvis', 'Voice recognition is not supported. Please use Chrome.');
+    log('SR NOT SUPPORTED');
     return null;
   }
   const r = new SR();
@@ -139,28 +141,32 @@ function initSpeechRecognition() {
 
   r.onstart = function () {
     isListening = true;
-    log('MIC START');
     setStatus('LISTENING', 'listening');
     showWaveform(true);
+    log('MIC START');
   };
-    r.onerror = function (e) {
+
+  r.onerror = function (e) {
     log('MIC ERROR: ' + e.error);
     isListening = false;
     showWaveform(false);
     setStatus('READY');
-    if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('SR error', e.error);
   };
+
   r.onend = function () {
     isListening = false;
     showWaveform(false);
     if (!isAwake) setStatus('READY');
+    log('MIC END');
   };
-    r.onresult = function (e) {
+
+  r.onresult = function (e) {
     const text = e.results[0][0].transcript.trim();
     log('HEARD: ' + text);
     if (!text) return;
     handleHeardText(text);
   };
+
   return r;
 }
 
@@ -168,12 +174,12 @@ function startListening() {
   if (!recognition) recognition = initSpeechRecognition();
   if (!recognition) return;
   if (isListening) return;
-  try { recognition.start(); } catch (e) {}
+  try { recognition.start(); } catch (e) { log('SR START FAIL: ' + e.message); }
 }
 
 function handleHeardText(text) {
   const lower = text.toLowerCase();
-  log('CHECKING WAKE in: ' + lower);
+  log('CHECK WAKE: ' + lower);
   if (!isAwake) {
     if (lower.indexOf(WAKE_WORD_PRIMARY) !== -1 || lower.indexOf(WAKE_WORD_SHORT) !== -1) {
       wakeUp();
@@ -193,7 +199,8 @@ function wakeUp() {
   isAwake = true;
   setStatus('LISTENING', 'listening');
   speak('Yes ' + userName);
-  setTimeout(function () { if (!isListening) startListening(); }, 1400);
+  log('AWAKE');
+  setTimeout(function () { if (!isListening) startListening(); }, 600);
 }
 
 async function initClapDetection() {
@@ -206,8 +213,9 @@ async function initClapDetection() {
     source.connect(analyser);
     clapLoopRunning = true;
     clapLoop();
+    log('CLAP READY');
   } catch (e) {
-    console.warn('Clap detection unavailable', e);
+    log('CLAP ERR: ' + e.message);
   }
 }
 
@@ -221,6 +229,7 @@ function clapLoop() {
   const now = Date.now();
   if (avg > CLAP_THRESHOLD && now - lastClap > CLAP_COOLDOWN_MS) {
     lastClap = now;
+    log('CLAP!');
     onClapDetected();
   }
   requestAnimationFrame(clapLoop);
@@ -235,11 +244,16 @@ async function processUserInput(text) {
   isAwake = false;
   setStatus('THINKING', 'thinking');
   hideInfoPanel();
+  log('PROCESS: ' + text);
 
-  if (handleLocalCommand(text)) return;
+  if (handleLocalCommand(text)) {
+    log('LOCAL CMD');
+    return;
+  }
 
   const wiki = await tryWikipedia(text);
   if (wiki) {
+    log('WIKI HIT');
     addMessage('jarvis', wiki.summary);
     speak(wiki.summary);
     if (wiki.image) showInfoPanel(wiki.image, wiki.title, wiki.summary);
@@ -247,7 +261,9 @@ async function processUserInput(text) {
     return;
   }
 
+  log('ASKING AI');
   const reply = await askAI(text);
+  log('AI SAID: ' + reply.substring(0, 40));
   addMessage('jarvis', reply);
   speak(reply);
   setStatus('READY');
@@ -354,7 +370,7 @@ async function tryWikipedia(text) {
       image: (data.thumbnail && data.thumbnail.source) || (data.originalimage && data.originalimage.source) || null
     };
   } catch (e) {
-    console.warn('Wiki lookup failed', e);
+    log('WIKI ERR');
     return null;
   }
 }
@@ -374,7 +390,7 @@ async function askAI(text) {
     .concat(recent)
     .concat([{ role: 'user', content: text }]);
 
-    log('CALLING AI...');
+  log('AI CALL...');
   try {
     const res = await fetch(GROQ_URL, {
       method: 'POST',
@@ -391,18 +407,18 @@ async function askAI(text) {
     });
 
     if (!res.ok) {
-      console.error('Groq error', res.status);
+      log('AI HTTP ' + res.status);
       setStatus('ERROR', 'error');
       return 'I could not reach the AI. Status ' + res.status + '.';
     }
 
-        const data = await res.json();
-    log('AI REPLIED OK');
+    const data = await res.json();
+    log('AI OK');
     return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
       ? data.choices[0].message.content.trim()
       : 'I did not get a response.';
   } catch (e) {
-    console.error('AI request failed', e);
+    log('AI NET ERR: ' + e.message);
     return 'Network error. Check your connection.';
   }
 }
@@ -428,6 +444,7 @@ function runBoot() {
 function startJarvis() {
   loadMemory();
   setStatus('READY');
+  log('BOOT DONE. KEY=' + (apiKey ? 'yes' : 'no'));
 
   if (!apiKey) {
     addMessage('jarvis', 'Welcome. Tap the settings icon and enter your Groq API key to fully activate me.');
@@ -438,8 +455,10 @@ function startJarvis() {
     speak('Welcome back. Systems are online.');
   }
 
-  startListening();
-  initClapDetection();
+  setTimeout(function () {
+    startListening();
+    initClapDetection();
+  }, 500);
 
   setInterval(function () {
     if (!isListening) startListening();
@@ -465,6 +484,21 @@ document.getElementById('clearMemory').addEventListener('click', function () {
     chatArea.innerHTML = '';
     addMessage('jarvis', 'Memory cleared.');
     speak('Memory cleared.');
+  }
+});
+
+document.getElementById('sendBtn').addEventListener('click', function () {
+  const t = document.getElementById('textInput').value.trim();
+  if (t) {
+    log('TYPED: ' + t);
+    document.getElementById('textInput').value = '';
+    processUserInput(t);
+  }
+});
+
+document.getElementById('textInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    document.getElementById('sendBtn').click();
   }
 });
 
