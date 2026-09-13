@@ -91,6 +91,7 @@ function showPasswordGate() {
 function checkPasswordGate() {
   if (localStorage.getItem('jarvis_unlocked') === 'yes') {
     isUnlocked = true;
+    isOwner = true;
     startJarvis();
     return false;
   }
@@ -561,12 +562,13 @@ document.getElementById('clearMemory').addEventListener('click', function () {
 });
 
 document.getElementById('sendBtn').addEventListener('click', function () {
-  if (!isOwner) {
-    addMessage('jarvis', 'Please say Hey JARVIS or clap once to verify you are Pratham.');
-    speak('Please say Hey JARVIS to verify you are Pratham.');
-    return;
-  }
   const t = document.getElementById('textInput').value.trim();
+  if (t) {
+    log('TYPED: ' + t);
+    document.getElementById('textInput').value = '';
+    processUserInput(t);
+  }
+});
   if (t) {
     log('TYPED: ' + t);
     document.getElementById('textInput').value = '';
