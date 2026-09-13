@@ -1,7 +1,7 @@
 /* JARVIS - Personal AI Assistant for Pratham */
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_MODEL = 'openai/gpt-oss-120b';
 const WIKI_SEARCH_URL = 'https://en.wikipedia.org/w/api.php';
 const WAKE_WORD_PRIMARY = 'hey jarvis';
 const WAKE_WORD_SHORT = 'jarvis';
