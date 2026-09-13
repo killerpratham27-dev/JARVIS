@@ -443,6 +443,7 @@ function runBoot() {
 
 function startJarvis() {
   loadMemory();
+  isOwner = true;
   setStatus('READY');
   log('BOOT DONE. KEY=' + (apiKey ? 'yes' : 'no'));
 
