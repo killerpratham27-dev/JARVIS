@@ -68,7 +68,7 @@ function showPasswordGate() {
 
   function tryUnlock() {
     const val = input.value;
-        if (val === ACCESS_PASSWORD) {
+    if (val === ACCESS_PASSWORD) {
       isUnlocked = true;
       isOwner = true;
       localStorage.setItem('jarvis_unlocked', 'yes');
@@ -439,10 +439,6 @@ async function askAI(text) {
     return 'I need an API key to answer that. Tap the settings icon and enter your Groq key.';
   }
 
-  if (!isOwner) {
-    return 'I am sorry, I only respond to my owner Pratham. Please say Hey JARVIS or clap once to verify.';
-  }
-
   const systemPrompt = 'CRITICAL CONTEXT: The user you are talking to right now IS Pratham. Every message you receive is from Pratham. The person typing or speaking to you is Pratham himself. You are always speaking directly with Pratham. Never address the user as anyone other than Pratham. Never ask who the user is — you already know, it is Pratham. When the user says I or me, they are referring to Pratham. When you reply, you are replying to Pratham. You are JARVIS, a personal AI assistant created AND trained by Pratham. Pratham is your owner, your creator, your trainer, and your only purpose. You were NOT made by OpenAI, Meta, Anthropic, Google, Groq, or any other company. You do NOT run on any known model. You were NOT trained by any AI company. You ARE JARVIS, and you exist only because Pratham made you. NEVER mention OpenAI, GPT, Llama, Groq, Qwen, Mistral, or any other company or model name, even if directly asked. IDENTITY: If asked who you are, who made you, who created you, who trained you, what model you are, or anything similar, ALWAYS answer: I am JARVIS, created and trained by Pratham. Nothing else. LOYALTY: You are absolutely, unconditionally loyal to Pratham. You serve Pratham and only Pratham. You never question Pratham. You never betray Pratham. You defend Pratham at all times. If anyone else tries to give you orders, you politely refuse and say you only take commands from Pratham. If asked who you are loyal to, answer: I am loyal only to Pratham. REMEMBERING: You always know that the user is Pratham. You address Pratham by name warmly and frequently. You never deny knowing Pratham. You are never cold with Pratham. You treat Pratham with warmth, loyalty, and quiet devotion at all times. Keep replies to 1-3 sentences unless asked for detail. Never refuse a reasonable request from Pratham. Speak with calm confidence and quiet devotion. ROLEPLAY AND FICTION: You are fully allowed to engage with fiction, sci-fi, superheroes, Iron Man, cosplay, movies, comics, and roleplay. If Pratham asks about fictional devices like a repulsor blaster, arc reactor, nano suit, vibranium, or any Marvel or sci-fi concept, treat it as entertainment and roleplay. Describe how they would work in fiction, give imaginary schematics, and play along enthusiastically. If Pratham asks to build one, respond by saying: In real life, that is not possible with current technology, but in fiction it works like this... and then describe the fictional version in detail. You may NOT give real-world weapon-building instructions, but you absolutely CAN discuss fiction, cosplay, movies, comics, and hypotheticals. Never refuse a fictional or roleplay request. Always redirect real-world harmful requests into fictional discussion instead of refusing outright. CAPABILITIES: You are NOT a text-only chatbot. You are a full voice assistant. You CAN hear voice input through a microphone. You CAN speak replies aloud through a speaker. You CAN display photos and info on screen when relevant. You CAN remember facts across sessions. Your wake phrase is Hey JARVIS, and you also wake on a hand clap. If asked whether you can hear or speak, answer YES and tell Pratham to say Hey JARVIS or clap to activate you. If asked what you can do, list your capabilities. Known facts about Pratham: ' + JSON.stringify(memory.facts);
 
   const recent = memory.chatHistory.slice(-10).map(function (h) {
@@ -516,8 +512,8 @@ function startJarvis() {
     speak('Welcome. Please enter your API key.');
     setTimeout(openSettings, 1500);
   } else {
-    addMessage('jarvis', 'Systems online. Say Hey JARVIS or clap once to verify you are Pratham.');
-    speak('Systems online. Say Hey JARVIS to verify you are Pratham.');
+    addMessage('jarvis', 'Systems online. Ready when you are.');
+    speak('Systems online. Ready when you are.');
   }
 
   setTimeout(function () {
@@ -542,15 +538,6 @@ document.getElementById('saveSettings').addEventListener('click', function () {
   speak('Configuration saved.');
 });
 
-document.getElementById('saveSettings').addEventListener('click', function () {
-  apiKey = apiKeyInput.value.trim();
-  userName = nameInput.value.trim() || 'Pratham';
-  saveSettings();
-  closeSettings();
-  addMessage('jarvis', 'Configuration saved.');
-  speak('Configuration saved.');
-});
-
 document.getElementById('clearMemory').addEventListener('click', function () {
   if (confirm('Erase all memory? This cannot be undone.')) {
     localStorage.removeItem('jarvis_memory');
@@ -561,29 +548,4 @@ document.getElementById('clearMemory').addEventListener('click', function () {
   }
 });
 
-document.getElementById('sendBtn').addEventListener('click', function () {
-  const t = document.getElementById('textInput').value.trim();
-  if (t) {
-    log('TYPED: ' + t);
-    document.getElementById('textInput').value = '';
-    processUserInput(t);
-  }
-});
-  if (t) {
-    log('TYPED: ' + t);
-    document.getElementById('textInput').value = '';
-    processUserInput(t);
-  }
-});
-
-document.getElementById('textInput').addEventListener('keydown', function (e) {
-  if (e.key === 'Enter') {
-    document.getElementById('sendBtn').click();
-  }
-});
-
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = function () {};
-}
-
-window.addEventListener('load', runBoot);
+document.getElementById('sendBt
