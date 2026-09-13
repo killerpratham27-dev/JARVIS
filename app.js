@@ -7,7 +7,6 @@ const WAKE_WORD_PRIMARY = 'hey jarvis';
 const WAKE_WORD_SHORT = 'jarvis';
 const CLAP_THRESHOLD = 0.45;
 const CLAP_COOLDOWN_MS = 1500;
-const ACCESS_PASSWORD = 'Pratham@0204';
 
 let apiKey = '';
 let userName = 'Pratham';
@@ -15,7 +14,6 @@ let memory = { facts: {}, chatHistory: [] };
 let isAwake = false;
 let isListening = false;
 let isOwner = false;
-let isUnlocked = false;
 let lastClap = 0;
 let recognition = null;
 let audioContext = null;
@@ -39,63 +37,6 @@ const nameInput = $('nameInput');
 
 function log(msg) {
   console.log(msg);
-  const d = document.getElementById('debug');
-  if (!d) return;
-  const line = document.createElement('div');
-  const t = new Date().toLocaleTimeString();
-  line.textContent = t + ' ' + msg;
-  d.appendChild(line);
-  d.scrollTop = d.scrollHeight;
-}
-
-/* ==========================================================
-   PASSWORD GATE
-   ========================================================== */
-function showPasswordGate() {
-  const gate = document.createElement('div');
-  gate.id = 'passwordGate';
-  gate.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9998;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;';
-  gate.innerHTML = '<div style="color:#00e5ff;font-size:22px;letter-spacing:8px;margin-bottom:24px;text-shadow:0 0 12px #00e5ff;">J A R V I S</div>'
-    + '<div style="color:#8fb8c8;font-size:12px;letter-spacing:2px;margin-bottom:20px;">ACCESS RESTRICTED</div>'
-    + '<input id="pwInput" type="password" placeholder="Enter password" style="width:100%;max-width:320px;padding:14px;background:#000810;color:#fff;border:1px solid rgba(0,229,255,0.5);border-radius:8px;font-size:15px;outline:none;text-align:center;" />'
-    + '<button id="pwSubmit" style="width:100%;max-width:320px;margin-top:16px;padding:14px;background:#00e5ff;color:#000;border:none;border-radius:8px;font-weight:700;letter-spacing:2px;font-size:13px;">UNLOCK</button>'
-    + '<div id="pwError" style="color:#ff3050;font-size:12px;margin-top:12px;min-height:16px;"></div>';
-  document.body.appendChild(gate);
-
-  const input = document.getElementById('pwInput');
-  const btn = document.getElementById('pwSubmit');
-  const err = document.getElementById('pwError');
-
-  function tryUnlock() {
-    const val = input.value;
-    if (val === ACCESS_PASSWORD) {
-      isUnlocked = true;
-      isOwner = true;
-      localStorage.setItem('jarvis_unlocked', 'yes');
-      gate.remove();
-      startJarvis();
-      return;
-    }
-    err.textContent = 'Incorrect password.';
-    input.value = '';
-    input.focus();
-  }
-
-  btn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') tryUnlock();
-  });
-  input.focus();
-}
-
-function checkPasswordGate() {
-  if (localStorage.getItem('jarvis_unlocked') === 'yes') {
-    isUnlocked = true;
-    isOwner = true;
-    startJarvis();
-    return false;
-  }
-  return true;
 }
 
 function loadMemory() {
@@ -496,9 +437,7 @@ function runBoot() {
   setTimeout(function () {
     bootScreen.classList.add('hidden');
     app.classList.remove('hidden');
-    if (checkPasswordGate()) {
-      showPasswordGate();
-    }
+    startJarvis();
   }, 3200);
 }
 
@@ -512,8 +451,8 @@ function startJarvis() {
     speak('Welcome. Please enter your API key.');
     setTimeout(openSettings, 1500);
   } else {
-    addMessage('jarvis', 'Systems online. Ready when you are.');
-    speak('Systems online. Ready when you are.');
+    addMessage('jarvis', 'Systems online. Say Hey JARVIS or clap once to verify you are Pratham.');
+    speak('Systems online. Say Hey JARVIS to verify you are Pratham.');
   }
 
   setTimeout(function () {
@@ -548,4 +487,28 @@ document.getElementById('clearMemory').addEventListener('click', function () {
   }
 });
 
-document.getElementById('sendBt
+document.getElementById('sendBtn').addEventListener('click', function () {
+  if (!isOwner) {
+    addMessage('jarvis', 'Please say Hey JARVIS or clap once to verify you are Pratham.');
+    speak('Please say Hey JARVIS to verify you are Pratham.');
+    return;
+  }
+  const t = document.getElementById('textInput').value.trim();
+  if (t) {
+    log('TYPED: ' + t);
+    document.getElementById('textInput').value = '';
+    processUserInput(t);
+  }
+});
+
+document.getElementById('textInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    document.getElementById('sendBtn').click();
+  }
+});
+
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = function () {};
+}
+
+window.addEventListener('load', runBoot);
