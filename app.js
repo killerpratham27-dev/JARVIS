@@ -68,8 +68,9 @@ function showPasswordGate() {
 
   function tryUnlock() {
     const val = input.value;
-    if (val === ACCESS_PASSWORD) {
+        if (val === ACCESS_PASSWORD) {
       isUnlocked = true;
+      isOwner = true;
       localStorage.setItem('jarvis_unlocked', 'yes');
       gate.remove();
       startJarvis();
